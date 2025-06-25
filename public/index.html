@@ -6,15 +6,16 @@
   <title>Email Your MP</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-[#f5f6f7] text-gray-800"> <!-- New faded grey background -->
+
   <div class="flex items-center justify-between bg-white p-4 shadow mb-6">
     <img src="/images/logo.png" alt="Logo" class="h-20 w-auto">
     <h1 class="text-3xl font-bold text-blue-900">Email Your MP</h1>
   </div>
 
-  <div class="max-w-3xl mx-auto p-6">
+  <div class="max-w-3xl mx-auto p-6 bg-white bg-opacity-95 rounded-xl shadow-lg">
     <h1 id="campaign-title" class="text-4xl font-bold mb-4 text-red-700">Ban on Halal Slaughter</h1>
-    <p class="mb-6 text-lg">We're urging constituents to write to their MPs regarding the proposed bill that bans halal slaughter — a religious right protected under law.</p>
+    <p class="mb-6 text-lg text-gray-700">We're urging constituents to write to their MPs regarding the proposed bill that bans halal slaughter — a religious right protected under law.</p>
 
     <label for="postcode" class="block font-semibold mb-1">Enter your postcode:</label>
     <div class="flex mb-4">
@@ -22,12 +23,12 @@
       <button onclick="findRepresentative()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Find MP</button>
     </div>
 
-    <div class="bg-gray-100 p-3 rounded mt-4">
+    <div class="bg-[#f1f2f3] p-3 rounded mt-4 shadow-inner">
       <p class="font-semibold">Your MP:</p>
       <p id="mp-name" class="text-blue-700">Not found yet</p>
     </div>
 
-    <div class="mb-4">
+    <div class="mb-4 mt-6">
       <label for="campaign-selector" class="block mb-1 font-semibold">Choose a Campaign:</label>
       <select id="campaign-selector" class="border p-2 w-full rounded">
         <option value="halal">Ban on Halal Slaughter</option>
@@ -50,6 +51,7 @@
       <label class="block font-semibold mb-1">Subject</label>
       <input type="text" id="subject" class="border p-2 w-full rounded" />
     </div>
+
     <div class="mb-6">
       <label class="block font-semibold mb-1">Body</label>
       <textarea id="body" class="border p-2 w-full h-40 rounded"></textarea>
@@ -84,15 +86,15 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ postcode })
         })
-          .then(res => res.json())
-          .then(data => {
-            if (data.message) return alert(data.message);
-            document.getElementById('mp-name').innerText = `${data.name} (${data.party}) – ${data.constituency}`;
-          })
-          .catch(err => {
-            console.error('Fetch error:', err);
-            alert('There was an error fetching MP data.');
-          });
+        .then(res => res.json())
+        .then(data => {
+          if (data.message) return alert(data.message);
+          document.getElementById('mp-name').innerText = `${data.name} (${data.party}) – ${data.constituency}`;
+        })
+        .catch(err => {
+          console.error('Fetch error:', err);
+          alert('There was an error fetching MP data.');
+        });
       }
 
       function generateEmail() {
@@ -146,7 +148,7 @@
         })
         .then(res => res.json())
         .then(data => {
-          console.log('✅ Suggestion submitted:', suggestion); // debug
+          console.log('✅ Suggestion submitted:', suggestion);
           document.getElementById('suggest-status').classList.remove('hidden');
           document.getElementById('suggestion').value = '';
         })
@@ -156,7 +158,6 @@
         });
       }
 
-      // Expose functions to window for buttons
       window.findRepresentative = findRepresentative;
       window.generateEmail = generateEmail;
       window.sendEmail = sendEmail;
