@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard - Email Your MP</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
 <body class="bg-gray-100 text-gray-800">
   <div class="flex items-center justify-between bg-white p-4 shadow mb-6">
-    <img src="/images/logo.png" alt="Logo" class="h-20 w-auto">
+    <img src="/images/logo.png" alt="Logo" class="h-20 w-auto" />
     <h1 class="text-3xl font-bold text-blue-900">Admin Dashboard</h1>
   </div>
 
@@ -18,28 +18,30 @@
       <p class="text-gray-600">Manage campaigns and view platform analytics</p>
     </header>
 
+    <!-- Campaign Summary -->
     <section class="mb-10">
       <h2 class="text-2xl font-semibold mb-4">Campaign Summary</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div class="bg-white p-6 rounded shadow text-center">
           <p class="text-gray-500">Active Campaigns</p>
-          <p class="text-3xl font-bold text-blue-700" id="active-campaigns">2</p>
+          <p class="text-3xl font-bold text-blue-700">4</p>
         </div>
         <div class="bg-white p-6 rounded shadow text-center">
           <p class="text-gray-500">Emails Sent</p>
-          <p class="text-3xl font-bold text-green-600" id="emails-sent">2140</p>
+          <p class="text-3xl font-bold text-green-600">2140</p>
         </div>
         <div class="bg-white p-6 rounded shadow text-center">
           <p class="text-gray-500">Average Open Rate</p>
-          <p class="text-3xl font-bold text-yellow-600" id="open-rate">67%</p>
+          <p class="text-3xl font-bold text-yellow-600">67%</p>
         </div>
         <div class="bg-white p-6 rounded shadow text-center">
           <p class="text-gray-500">Unique Constituents</p>
-          <p class="text-3xl font-bold text-purple-700" id="unique-users">980</p>
+          <p class="text-3xl font-bold text-purple-700">980</p>
         </div>
       </div>
     </section>
 
+    <!-- Campaign Table -->
     <section class="mb-10">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-semibold">Campaigns</h2>
@@ -80,7 +82,8 @@
       </table>
     </section>
 
-    <section>
+    <!-- Recent Activity -->
+    <section class="mb-10">
       <h2 class="text-2xl font-semibold mb-4">Recent Email Activity</h2>
       <div class="overflow-auto">
         <table class="w-full bg-white rounded shadow overflow-hidden">
@@ -110,36 +113,40 @@
       </div>
     </section>
 
+    <!-- Suggestions Section -->
     <section class="mt-10">
       <h2 class="text-2xl font-semibold mb-4 text-blue-900">User Campaign Suggestions</h2>
-      <ul id="suggestions-list" class="space-y-4 bg-white p-4 rounded shadow">
-        <!-- Suggestions will appear here -->
+      <ul id="suggestions-list" class="space-y-3 bg-white p-4 rounded shadow">
+        <li class="text-gray-500 italic">Loading suggestions...</li>
       </ul>
     </section>
-
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      fetch('/api/get-suggestions')
+    document.addEventListener("DOMContentLoaded", () => {
+      const BASE_URL = 'https://email-your-mp-backend.onrender.com'; // 🔗 Your live backend
+
+      fetch(`${BASE_URL}/api/get-suggestions`)
         .then(res => res.json())
         .then(data => {
           const list = document.getElementById('suggestions-list');
+          list.innerHTML = '';
+
           if (data.length === 0) {
-            list.innerHTML = '<li class="text-gray-500">No suggestions yet.</li>';
+            list.innerHTML = '<li class="text-gray-500 italic">No suggestions yet.</li>';
             return;
           }
 
-          list.innerHTML = '';
-          data.reverse().forEach(s => {
+          data.reverse().forEach(item => {
             const li = document.createElement('li');
-            li.className = "p-2 border-b";
-            li.innerText = `${s.timestamp.split('T')[0]} - ${s.suggestion}`;
+            li.className = 'p-3 border-b';
+            li.textContent = `${new Date(item.timestamp).toLocaleDateString()} – ${item.suggestion}`;
             list.appendChild(li);
           });
         })
         .catch(err => {
           console.error('Error fetching suggestions:', err);
+          document.getElementById('suggestions-list').innerHTML = '<li class="text-red-500">Failed to load suggestions.</li>';
         });
     });
   </script>

@@ -28,23 +28,22 @@
     </div>
 
     <div class="mb-4">
-      <div class="mb-4">
-  <label for="campaign-selector" class="block mb-1 font-semibold">Choose a Campaign:</label>
-  <select id="campaign-selector" class="border p-2 w-full rounded">
-    <option value="halal">Ban on Halal Slaughter</option>
-    <option value="palestine">Support Palestinian Human Rights</option>
-    <option value="mosque">Prevent Mosque Closures</option>
-    <option value="school">Protect Religious Education in Schools</option>
-  </select>
-</div>
+      <label for="campaign-selector" class="block mb-1 font-semibold">Choose a Campaign:</label>
+      <select id="campaign-selector" class="border p-2 w-full rounded">
+        <option value="halal">Ban on Halal Slaughter</option>
+        <option value="palestine">Support Palestinian Human Rights</option>
+        <option value="mosque">Prevent Mosque Closures</option>
+        <option value="school">Protect Religious Education in Schools</option>
+      </select>
 
-      <label for="tone" class="block mb-1 font-semibold">Choose tone of message:</label>
+      <label for="tone" class="block mt-4 mb-1 font-semibold">Choose tone of message:</label>
       <select id="tone" class="border p-2 w-full rounded">
         <option value="respectful">Respectful</option>
         <option value="firm">Firm</option>
         <option value="passionate">Passionate</option>
       </select>
     </div>
+
     <button onclick="generateEmail()" class="bg-green-600 text-white px-4 py-2 rounded mb-6 hover:bg-green-700">Generate Email</button>
 
     <div class="mb-4">
@@ -74,41 +73,31 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
+      const BASE_URL = 'https://email-your-mp-backend.onrender.com';
+
       function findRepresentative() {
         const postcode = document.getElementById('postcode').value.trim();
+        if (!postcode) return alert('Please enter a postcode');
 
-        if (!postcode) {
-          alert('Please enter a postcode');
-          return;
-        }
-
-        fetch('/api/lookup-mp', {
+        fetch(`${BASE_URL}/api/lookup-mp`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ postcode })
         })
           .then(res => res.json())
           .then(data => {
-            if (data.message) {
-              alert(data.message);
-              return;
-            }
-
-            console.log('MP Data from backend:', data);
+            if (data.message) return alert(data.message);
             document.getElementById('mp-name').innerText = `${data.name} (${data.party}) – ${data.constituency}`;
           })
           .catch(err => {
-            console.error('Fetch Error:', err);
+            console.error('Fetch error:', err);
             alert('There was an error fetching MP data.');
           });
       }
 
       function generateEmail() {
         const campaignOption = document.getElementById('campaign-selector');
-const campaign = campaignOption.options[campaignOption.selectedIndex].text;
-
+        const campaign = campaignOption.options[campaignOption.selectedIndex].text;
         const tone = document.getElementById('tone').value;
 
         const toneText = {
@@ -132,7 +121,7 @@ const campaign = campaignOption.options[campaignOption.selectedIndex].text;
         const body = document.getElementById('body').value;
 
         try {
-          const response = await fetch('/api/send-email', {
+          const response = await fetch(`${BASE_URL}/api/send-email`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, address, email, subject, body })
@@ -141,35 +130,33 @@ const campaign = campaignOption.options[campaignOption.selectedIndex].text;
           const result = await response.json();
           alert(result.message || 'Email sent successfully');
         } catch (err) {
+          console.error('Email error:', err);
           alert('There was an error sending the email.');
         }
       }
 
       function submitSuggestion() {
         const suggestion = document.getElementById('suggestion').value.trim();
+        if (!suggestion) return alert('Please type a suggestion before submitting.');
 
-        if (!suggestion) {
-          alert('Please type a suggestion before submitting.');
-          return;
-        }
-
-        fetch('/api/submit-suggestion', {
+        fetch(`${BASE_URL}/api/submit-suggestion`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ suggestion })
         })
-          .then(res => res.json())
-          .then(data => {
-            document.getElementById('suggest-status').classList.remove('hidden');
-            document.getElementById('suggestion').value = '';
-          })
-          .catch(err => {
-            alert('There was an error sending your suggestion.');
-          });
+        .then(res => res.json())
+        .then(data => {
+          console.log('✅ Suggestion submitted:', suggestion); // debug
+          document.getElementById('suggest-status').classList.remove('hidden');
+          document.getElementById('suggestion').value = '';
+        })
+        .catch(err => {
+          console.error('❌ Submit Error:', err);
+          alert('There was an error sending your suggestion.');
+        });
       }
 
+      // Expose functions to window for buttons
       window.findRepresentative = findRepresentative;
       window.generateEmail = generateEmail;
       window.sendEmail = sendEmail;
