@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Your MP</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="flex items-center justify-between bg-white p-4 shadow mb-6">
+    <img src="/images/logo.png" alt="Logo" class="h-20 w-auto">
+    <h1 class="text-3xl font-bold text-blue-900">Email Your MP</h1>
+  </div>
+
+  <div class="max-w-3xl mx-auto p-6">
+    <h1 id="campaign-title" class="text-4xl font-bold mb-4 text-red-700">Ban on Halal Slaughter</h1>
+    <p class="mb-6 text-lg">We're urging constituents to write to their MPs regarding the proposed bill that bans halal slaughter — a religious right protected under law.</p>
+
+    <label for="postcode" class="block font-semibold mb-1">Enter your postcode:</label>
+    <div class="flex mb-4">
+      <input type="text" id="postcode" class="border border-gray-300 rounded p-2 w-full mr-2" placeholder="e.g. LE1 1AA" />
+      <button onclick="findRepresentative()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Find MP</button>
+    </div>
+
+    <div class="bg-gray-100 p-3 rounded mt-4">
+      <p class="font-semibold">Your MP:</p>
+      <p id="mp-name" class="text-blue-700">Not found yet</p>
+    </div>
+
+    <div class="mb-4">
+      <div class="mb-4">
+  <label for="campaign-selector" class="block mb-1 font-semibold">Choose a Campaign:</label>
+  <select id="campaign-selector" class="border p-2 w-full rounded">
+    <option value="halal">Ban on Halal Slaughter</option>
+    <option value="palestine">Support Palestinian Human Rights</option>
+    <option value="mosque">Prevent Mosque Closures</option>
+    <option value="school">Protect Religious Education in Schools</option>
+  </select>
+</div>
+
+      <label for="tone" class="block mb-1 font-semibold">Choose tone of message:</label>
+      <select id="tone" class="border p-2 w-full rounded">
+        <option value="respectful">Respectful</option>
+        <option value="firm">Firm</option>
+        <option value="passionate">Passionate</option>
+      </select>
+    </div>
+    <button onclick="generateEmail()" class="bg-green-600 text-white px-4 py-2 rounded mb-6 hover:bg-green-700">Generate Email</button>
+
+    <div class="mb-4">
+      <label class="block font-semibold mb-1">Subject</label>
+      <input type="text" id="subject" class="border p-2 w-full rounded" />
+    </div>
+    <div class="mb-6">
+      <label class="block font-semibold mb-1">Body</label>
+      <textarea id="body" class="border p-2 w-full h-40 rounded"></textarea>
+    </div>
+
+    <h3 class="text-xl font-semibold mb-2">Your Details</h3>
+    <input type="text" id="user-name" class="border p-2 w-full mb-2 rounded" placeholder="Your Full Name" />
+    <input type="text" id="user-address" class="border p-2 w-full mb-2 rounded" placeholder="Your Address" />
+    <input type="email" id="user-email" class="border p-2 w-full mb-6 rounded" placeholder="Your Email Address" />
+
+    <button onclick="sendEmail()" class="bg-blue-700 text-white px-6 py-2 rounded hover:bg-blue-800">Send Email</button>
+
+    <div class="mt-10 bg-white p-6 rounded shadow">
+      <h2 class="text-2xl font-bold mb-4 text-blue-900">Suggest a Campaign</h2>
+      <label class="block font-semibold mb-1">Your Campaign Idea</label>
+      <textarea id="suggestion" class="border p-2 w-full h-24 mb-4 rounded" placeholder="Describe the issue or campaign you'd like us to run..."></textarea>
+      <button onclick="submitSuggestion()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Submit Suggestion</button>
+      <p id="suggest-status" class="mt-2 text-green-600 hidden">Thank you! Your suggestion was received.</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      function findRepresentative() {
+        const postcode = document.getElementById('postcode').value.trim();
+
+        if (!postcode) {
+          alert('Please enter a postcode');
+          return;
+        }
+
+        fetch('/api/lookup-mp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ postcode })
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.message) {
+              alert(data.message);
+              return;
+            }
+
+            console.log('MP Data from backend:', data);
+            document.getElementById('mp-name').innerText = `${data.name} (${data.party}) – ${data.constituency}`;
+          })
+          .catch(err => {
+            console.error('Fetch Error:', err);
+            alert('There was an error fetching MP data.');
+          });
+      }
+
+      function generateEmail() {
+        const campaignOption = document.getElementById('campaign-selector');
+const campaign = campaignOption.options[campaignOption.selectedIndex].text;
+
+        const tone = document.getElementById('tone').value;
+
+        const toneText = {
+          respectful: "I respectfully urge you to uphold the values of religious freedom and cultural inclusion.",
+          firm: "I strongly urge you to oppose any policy that undermines the rights of religious minorities in the UK.",
+          passionate: "As a passionate member of the British Muslim community, I implore you to take a principled stand."
+        };
+
+        const subject = `Constituent Concern: ${campaign}`;
+        const body = `Dear MP,\n\n${toneText[tone]}\n\nHalal slaughter is an integral aspect of Islam and protected by UK law and ethics.\n\nYours faithfully,\n[Your Name]\n[Your Address]`;
+
+        document.getElementById('subject').value = subject;
+        document.getElementById('body').value = body;
+      }
+
+      async function sendEmail() {
+        const name = document.getElementById('user-name').value;
+        const address = document.getElementById('user-address').value;
+        const email = document.getElementById('user-email').value;
+        const subject = document.getElementById('subject').value;
+        const body = document.getElementById('body').value;
+
+        try {
+          const response = await fetch('/api/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, address, email, subject, body })
+          });
+
+          const result = await response.json();
+          alert(result.message || 'Email sent successfully');
+        } catch (err) {
+          alert('There was an error sending the email.');
+        }
+      }
+
+      function submitSuggestion() {
+        const suggestion = document.getElementById('suggestion').value.trim();
+
+        if (!suggestion) {
+          alert('Please type a suggestion before submitting.');
+          return;
+        }
+
+        fetch('/api/submit-suggestion', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ suggestion })
+        })
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById('suggest-status').classList.remove('hidden');
+            document.getElementById('suggestion').value = '';
+          })
+          .catch(err => {
+            alert('There was an error sending your suggestion.');
+          });
+      }
+
+      window.findRepresentative = findRepresentative;
+      window.generateEmail = generateEmail;
+      window.sendEmail = sendEmail;
+      window.submitSuggestion = submitSuggestion;
+    });
+  </script>
+</body>
+</html>
